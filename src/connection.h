@@ -2,6 +2,7 @@
 
 #include "nlohmann/json.hpp"
 #include "requestqueue.h"
+#include <fstream>
 #include <thread>
 
 struct Connection {
