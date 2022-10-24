@@ -14,9 +14,17 @@ struct Connection {
         _callback = f;
     }
 
-    void send(const nlohmann::json &json) {
-        out << json;
-        out.flush();
+    void sendRaw(const nlohmann::json &json);
+
+    template <typename T>
+    void send(const T &value) {
+        static long messageId = 0;
+        sendRaw({
+            {"jsonrpc", "2.0"},
+            {"id", ++messageId},
+            {"method", T::method},
+            {"params", value},
+        });
     }
 
 private:

@@ -24,13 +24,49 @@ Connection::~Connection() {
     error.close();
 }
 
+void Connection::sendRaw(const nlohmann::json &json) {
+    auto ss = std::stringstream{};
+
+    ss << json;
+
+    out << "Content-Length: " << ss.str().length() << "\r\n";
+    out << "\r\n";
+
+    out << ss.rdbuf();
+
+    out.flush();
+}
+
 void Connection::readIn() {
+    size_t contentLength = 0;
+
+    auto contentLengthStr = "Content-Length: "sv;
+    auto contentTypeStr = "Content-Type: "sv;
+
     for (std::string line; std::getline(in, line);) {
         if (line.empty()) {
             continue;
         }
+
         if (line.back() == '\r') {
             line.pop_back();
+        }
+
+        if (line.empty() || contentLength) {
+            auto json = nlohmann::json{};
+            in >> json;
+
+            _callback(json);
+
+            contentLength = 0;
+
+            continue;
+        }
+
+        if (line.rfind(contentLengthStr, 0) == 0) {
+            contentLength = std::stol(line.substr(contentLengthStr.size()));
+        }
+        else if (line.rfind(contentLengthStr, 0) == 0) {
         }
 
         std::cout << line << std::endl;
