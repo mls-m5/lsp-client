@@ -14,30 +14,52 @@ void createFifo(std::filesystem::path path) {
 } // namespace
 
 Connection::Connection() {
-    thread = std::thread{[this] { readIn(); }};
+    inPath = "in-" + std::to_string(randomNumber(10000));
+    createFifo(inPath);
+    outPath = "out-" + std::to_string(randomNumber(10000));
+    createFifo(outPath);
+    errorPath = "error-" + std::to_string(randomNumber(10000));
+    createFifo(errorPath);
+
     clangdThread = std::thread{[this] { startClangd(); }};
+
+    thread = std::thread{[this] { readIn(); }};
+
+    out.open(outPath);
+    error.open(errorPath);
 }
 
 Connection::~Connection() {
     in.close();
     out.close();
     error.close();
+    thread.join();
+    clangdThread.join();
 }
 
 void Connection::sendRaw(const nlohmann::json &json) {
-    auto ss = std::stringstream{};
+    const auto str = [&] {
+        auto ss = std::stringstream{};
+        ss << std::setw(2) << json;
+        return ss.str();
+    }();
 
-    ss << json;
-
-    out << "Content-Length: " << ss.str().length() << "\r\n";
+    out << "Content-Length: " << str.length() << "\r\n";
     out << "\r\n";
+    out << str;
+    out << std::endl;
 
-    out << ss.rdbuf();
-
-    out.flush();
+    {
+        std::cout << "sending:\n";
+        std::cout << "Content-Length: " << str.length() << "\r\n";
+        std::cout << "\r\n";
+        std::cout << str << std::endl;
+    }
 }
 
 void Connection::readIn() {
+    in.open(inPath);
+
     size_t contentLength = 0;
 
     auto contentLengthStr = "Content-Length: "sv;
@@ -66,8 +88,6 @@ void Connection::readIn() {
         if (line.rfind(contentLengthStr, 0) == 0) {
             contentLength = std::stol(line.substr(contentLengthStr.size()));
         }
-        else if (line.rfind(contentLengthStr, 0) == 0) {
-        }
 
         std::cout << line << std::endl;
     }
@@ -75,22 +95,7 @@ void Connection::readIn() {
 
 void Connection::startClangd() {
     auto ss = std::ostringstream{};
-    ss << "clangd > " << inPath << " < " << outPath;
+    ss << "clangd > " << inPath << " < " << outPath << " 2> " << errorPath;
+    std::cout << "starting clangd with: " << ss.str() << std::endl;
     std::system(ss.str().c_str());
-}
-
-std::ifstream Connection::createIn(std::filesystem::path &path) {
-    path = "in-" + std::to_string(randomNumber(10000));
-
-    createFifo(path);
-
-    return std::ifstream{path.string()};
-}
-
-std::ofstream Connection::createOut(std::filesystem::path &path) {
-    path = "out-" + std::to_string(randomNumber(10000));
-
-    createFifo(path);
-
-    return std::ofstream{path.string()};
 }

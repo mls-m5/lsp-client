@@ -18,12 +18,21 @@ struct Connection {
 
     template <typename T>
     void send(const T &value) {
-        static long messageId = 0;
         sendRaw({
             {"jsonrpc", "2.0"},
-            {"id", ++messageId},
+            {"id", ++_messageId},
             {"method", T::method},
             {"params", value},
+        });
+    }
+
+    // Alternative way
+    void send(std::string_view method, const nlohmann::json &json) {
+        sendRaw({
+            {"jsonrpc", "2.0"},
+            {"id", ++_messageId},
+            {"method", method},
+            {"params", json},
         });
     }
 
@@ -31,18 +40,17 @@ private:
     void readIn();
     void startClangd();
 
-    CallbackT _callback;
+    long _messageId = 4;
 
-    std::ifstream createIn(std::filesystem::path &path);
-    std::ofstream createOut(std::filesystem::path &path);
+    CallbackT _callback;
 
     std::filesystem::path inPath;
     std::filesystem::path outPath;
     std::filesystem::path errorPath;
 
-    std::ifstream in = createIn(inPath);
-    std::ofstream out = createOut(outPath);
-    std::ifstream error = createIn(errorPath);
+    std::ofstream out;
+    std::ifstream in;
+    std::ifstream error;
 
     std::thread thread;
     std::thread clangdThread;
