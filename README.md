@@ -175,5 +175,10 @@ Content-Length: 1734
 }
 ```
 
+
+## Licence
+
+Just slapped on a gnu licence.
+
 ## References
 https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/
