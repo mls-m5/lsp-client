@@ -4,24 +4,29 @@
 #include <iostream>
 #include <thread>
 
+using namespace std::literals;
+
+void test1(Connection &connection) {
+    connection.request(InitializeParams{}, [](const nlohmann::json &j) {
+        std::cout << "initialization response:\n";
+        std::cout << std::setw(2) << j << std::endl;
+    });
+
+    // Must wait for server to respond
+    // If debugging this might need to be increased to prevent the pipes
+    // from being closed prematurely
+    std::this_thread::sleep_for(100ms);
+}
+
 int main(int argc, char *argv[]) {
     auto connection = Connection{};
 
-    connection.callback(
-        [](auto &&j) { std::cout << std::setw(2) << j << std::endl; });
+    connection.callback([](auto &&j) {
+        std::cout << "unregistered notification:\n";
+        std::cout << std::setw(2) << j << std::endl;
+    });
 
-    connection.send(InitializeParams{});
-
-    using namespace std::literals;
-
-    // Must wait for server to respond
-    // If debugging this might need to be increased to prevent the pipes from
-    // being closed prematurely
-    std::this_thread::sleep_for(100ms);
-
-    connection.send("exit", {});
-
-    std::this_thread::sleep_for(100ms);
+    test1(connection);
 
     return 0;
 }

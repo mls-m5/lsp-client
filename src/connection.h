@@ -1,7 +1,7 @@
 #pragma once
 
 #include "nlohmann/json.hpp"
-#include <fstream>
+#include "requestqueue.h"
 #include <thread>
 
 struct Connection {
@@ -10,6 +10,7 @@ struct Connection {
 
     using CallbackT = std::function<void(const nlohmann::json &)>;
 
+    // Callback for notifications
     void callback(CallbackT f) {
         _callback = f;
     }
@@ -17,13 +18,21 @@ struct Connection {
     void sendRaw(const nlohmann::json &json);
 
     template <typename T>
-    void send(const T &value) {
+    long send(const T &value, long id = ++_messageId) {
         sendRaw({
             {"jsonrpc", "2.0"},
-            {"id", ++_messageId},
+            {"id", id},
             {"method", T::method},
             {"params", value},
         });
+        return id;
+    }
+
+    template <typename T>
+    void request(const T &value, CallbackT callback) {
+        auto id = ++_messageId;
+        _handling.waitFor(id, callback);
+        send(value, id);
     }
 
     // Alternative way
@@ -40,7 +49,9 @@ private:
     void readIn();
     void startClangd();
 
-    long _messageId = 4;
+    void handleCallback(const nlohmann::json &json);
+
+    static inline long _messageId = 0;
 
     CallbackT _callback;
 
@@ -54,4 +65,6 @@ private:
 
     std::thread thread;
     std::thread clangdThread;
+
+    RequestQueue _handling;
 };

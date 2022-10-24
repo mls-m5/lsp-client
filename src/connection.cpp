@@ -35,6 +35,10 @@ Connection::~Connection() {
     error.close();
     thread.join();
     clangdThread.join();
+
+    std::filesystem::remove(inPath);
+    std::filesystem::remove(outPath);
+    std::filesystem::remove(errorPath);
 }
 
 void Connection::sendRaw(const nlohmann::json &json) {
@@ -78,7 +82,9 @@ void Connection::readIn() {
             auto json = nlohmann::json{};
             in >> json;
 
-            _callback(json);
+            if (!_handling(json)) {
+                _callback(json);
+            }
 
             contentLength = 0;
 
