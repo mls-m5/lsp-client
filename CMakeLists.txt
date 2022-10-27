@@ -16,7 +16,7 @@ target_compile_features(
 
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
                 cmake_policy(SET CMP0135 NEW)
-        endif()
+endif()
 
 include(FetchContent)
 FetchContent_Declare(

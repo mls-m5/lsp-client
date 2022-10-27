@@ -20,10 +20,7 @@ void openDocument(Connection &connection) {
             },
     };
 
-    connection.request(params, [](const nlohmann::json &j) {
-        std::cout << "didopen response:\n";
-        std::cout << std::setw(2) << j << std::endl;
-    });
+    connection.notification(params);
 }
 
 void test1(Connection &connection) {

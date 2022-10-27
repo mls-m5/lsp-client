@@ -18,14 +18,24 @@ struct Connection {
 
     void sendRaw(const nlohmann::json &json);
 
+    // Specify negative id to send without id
     template <typename T>
-    long send(const T &value, long id = ++_messageId) {
-        sendRaw({
-            {"jsonrpc", "2.0"},
-            {"id", id},
-            {"method", T::method},
-            {"params", value},
-        });
+    long send(const T &value, long id = -1) {
+        if (id >= 0) {
+            sendRaw({
+                {"jsonrpc", "2.0"},
+                {"id", id},
+                {"method", T::method},
+                {"params", value},
+            });
+        }
+        else {
+            sendRaw({
+                {"jsonrpc", "2.0"},
+                {"method", T::method},
+                {"params", value},
+            });
+        }
         return id;
     }
 
@@ -34,6 +44,11 @@ struct Connection {
         auto id = ++_messageId;
         _handling.waitFor(id, callback);
         send(value, id);
+    }
+
+    template <typename T>
+    void notification(const T &value) {
+        send(value, -1);
     }
 
     // Alternative way
