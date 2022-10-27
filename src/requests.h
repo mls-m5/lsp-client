@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "lsptypes.h"
 #include "nlohmann/json.hpp"
 
 struct ClientInfo {
@@ -20,3 +21,25 @@ struct InitializeParams {
 };
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(InitializeParams, processId, clientInfo)
+
+struct WorkDoneProgressParams {
+    /**
+     * An optional token that a server can use to report work done progress.
+     */
+    nlohmann::json workDoneToken;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(WorkDoneProgressParams,
+                                                workDoneToken)
+
+struct DocumentSymbolParams : public WorkDoneProgressParams
+/*, PartialResultParams*/ {
+
+    static constexpr std::string_view method = "textDocument/documentSymbol";
+
+    TextDocumentIdentifier textDocument;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DocumentSymbolParams,
+                                   textDocument,
+                                   workDoneToken)

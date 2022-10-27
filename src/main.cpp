@@ -6,6 +6,20 @@
 
 using namespace std::literals;
 
+void justPrint(const nlohmann::json &json) {
+    std::cout << std::setw(4) << json << std::endl;
+}
+
+void getSymbolKinds(Connection &connection) {
+    auto content =
+        (std::ostringstream{} << std::ifstream{"src/main.cpp"}.rdbuf()).str();
+
+    auto params =
+        DocumentSymbolParams{.textDocument = {.uri = "file://src/main.cpp"}};
+
+    connection.request(params, justPrint);
+}
+
 void openDocument(Connection &connection) {
     auto content =
         (std::ostringstream{} << std::ifstream{"src/main.cpp"}.rdbuf()).str();
@@ -21,6 +35,8 @@ void openDocument(Connection &connection) {
     };
 
     connection.notification(params);
+
+    getSymbolKinds(connection);
 }
 
 void test1(Connection &connection) {
@@ -36,7 +52,7 @@ void test1(Connection &connection) {
 
     openDocument(connection);
 
-    std::this_thread::sleep_for(100ms);
+    std::this_thread::sleep_for(1s);
 }
 
 int main(int argc, char *argv[]) {

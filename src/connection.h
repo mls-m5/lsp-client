@@ -39,6 +39,27 @@ struct Connection {
         return id;
     }
 
+    // Alternative way
+    void send(std::string_view method,
+              const nlohmann::json &json,
+              long id = -1) {
+        if (id >= 0) {
+            sendRaw({
+                {"jsonrpc", "2.0"},
+                {"id", id},
+                {"method", method},
+                {"params", json},
+            });
+        }
+        else {
+            sendRaw({
+                {"jsonrpc", "2.0"},
+                {"method", method},
+                {"params", json},
+            });
+        }
+    }
+
     template <typename T>
     void request(const T &value, CallbackT callback) {
         auto id = ++_messageId;
@@ -46,19 +67,17 @@ struct Connection {
         send(value, id);
     }
 
+    void request(std::string_view method,
+                 const nlohmann::json &value,
+                 CallbackT callback) {
+        auto id = ++_messageId;
+        _handling.waitFor(id, callback);
+        send(method, value, id);
+    }
+
     template <typename T>
     void notification(const T &value) {
         send(value, -1);
-    }
-
-    // Alternative way
-    void send(std::string_view method, const nlohmann::json &json) {
-        sendRaw({
-            {"jsonrpc", "2.0"},
-            {"id", ++_messageId},
-            {"method", method},
-            {"params", json},
-        });
     }
 
 private:
