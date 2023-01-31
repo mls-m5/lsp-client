@@ -1,5 +1,6 @@
 #include "connection.h"
 #include "clangversion.h"
+#include "nlohmann/json.hpp"
 #include "randomutil.h"
 #include <filesystem>
 #include <iostream>
@@ -16,53 +17,54 @@ void createFifo(std::filesystem::path path) {
 
 namespace lsp {
 
-Connection::Connection(std::string args)
-    : args{args} {
-    inPath = "lsp-in-pipe-" + std::to_string(randomNumber(10000));
-    createFifo(inPath);
-    outPath = "lsp-out-pipe-" + std::to_string(randomNumber(10000));
-    createFifo(outPath);
-    errorPath = "lsp-error-pipe-" + std::to_string(randomNumber(10000));
-    createFifo(errorPath);
+Connection::Connection(std::string args, CallbackT callback)
+    : _args{args}
+    , _callback{callback} {
+    _inPath = "lsp-in-pipe-" + std::to_string(randomNumber(10000));
+    createFifo(_inPath);
+    _outPath = "lsp-out-pipe-" + std::to_string(randomNumber(10000));
+    createFifo(_outPath);
+    _errorPath = "lsp-error-pipe-" + std::to_string(randomNumber(10000));
+    createFifo(_errorPath);
 
-    clangdThread = std::thread{[this] { startClangd(); }};
-    errorThread = std::thread{
-        [this] { std::system(("cat " + errorPath.string()).c_str()); }};
+    _clangdThread = std::thread{[this] { startClangd(); }};
+    _errorThread = std::thread{
+        [this] { std::system(("cat " + _errorPath.string()).c_str()); }};
 
-    thread = std::thread{[this] { readIn(); }};
+    _thread = std::thread{[this] { readIn(); }};
 
-    out.open(outPath);
-    error.open(errorPath);
+    _out.open(_outPath);
+    _error.open(_errorPath);
 }
 
 Connection::~Connection() {
-    in.close();
-    out.close();
-    error.close();
-    thread.join();
-    clangdThread.join();
-    errorThread.join();
+    _in.close();
+    _out.close();
+    _error.close();
+    _thread.join();
+    _clangdThread.join();
+    _errorThread.join();
 
-    std::filesystem::remove(inPath);
-    std::filesystem::remove(outPath);
-    std::filesystem::remove(errorPath);
+    std::filesystem::remove(_inPath);
+    std::filesystem::remove(_outPath);
+    std::filesystem::remove(_errorPath);
 }
 
-void Connection::sendRaw(const nlohmann::json &json) {
+void Connection::send(const nlohmann::json &json) {
     const auto str = [&] {
         auto ss = std::stringstream{};
         ss << std::setw(2) << json;
         return ss.str();
     }();
 
-    if (!isServerRunning) {
+    if (!_isServerRunning) {
         std::cerr << "clangd is not running, probably an error\n";
     }
 
-    out << "Content-Length: " << str.length() << "\r\n";
-    out << "\r\n";
-    out << str;
-    out << std::endl;
+    _out << "Content-Length: " << str.length() << "\r\n";
+    _out << "\r\n";
+    _out << str;
+    _out << std::endl;
 
     {
         std::cout << "sending:\n";
@@ -73,14 +75,14 @@ void Connection::sendRaw(const nlohmann::json &json) {
 }
 
 void Connection::readIn() {
-    in.open(inPath);
+    _in.open(_inPath);
 
     size_t contentLength = 0;
 
     auto contentLengthStr = "Content-Length: "sv;
     auto contentTypeStr = "Content-Type: "sv;
 
-    for (std::string line; std::getline(in, line);) {
+    for (std::string line; std::getline(_in, line);) {
         if (line.empty()) {
             continue;
         }
@@ -91,11 +93,9 @@ void Connection::readIn() {
 
         if (line.empty() || contentLength) {
             auto json = nlohmann::json{};
-            in >> json;
+            _in >> json;
 
-            if (!_handling(json) && !_subscriptions(json)) {
-                _callback(json);
-            }
+            _callback(json);
 
             contentLength = 0;
 
@@ -113,12 +113,12 @@ void Connection::readIn() {
 void Connection::startClangd() {
     auto ss = std::ostringstream{};
     auto clangd = getClangVersion();
-    ss << clangd << " " << args << " > " << inPath << " < " << outPath << " 2> "
-       << errorPath;
+    ss << clangd << " " << _args << " > " << _inPath << " < " << _outPath
+       << " 2> " << _errorPath;
     std::cout << "starting clangd with: " << ss.str() << std::endl;
-    isServerRunning = true;
+    _isServerRunning = true;
     std::system(ss.str().c_str());
-    isServerRunning = false;
+    _isServerRunning = false;
 }
 
 } // namespace lsp

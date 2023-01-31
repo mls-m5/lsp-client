@@ -1,4 +1,5 @@
 #include "connection.h"
+#include "lspclient.h"
 #include "notifications.h"
 #include "requests.h"
 #include <iostream>
@@ -16,17 +17,17 @@ void justPrint(const T &json) {
     std::cout << std::setw(4) << nlohmann::json{json} << std::endl;
 }
 
-void getSymbolKinds(Connection &connection) {
+void getSymbolKinds(LspClient &client) {
     auto content =
         (std::ostringstream{} << std::ifstream{testSrc}.rdbuf()).str();
 
     auto params = DocumentSymbolParams{
         .textDocument = {.uri = "file://" + testSrc.string()}};
 
-    connection.request(params, justPrint<std::vector<DocumentSymbol>>);
+    client.request(params, justPrint<std::vector<DocumentSymbol>>);
 }
 
-void openDocument(Connection &connection) {
+void openDocument(LspClient &client) {
     auto content =
         (std::ostringstream{} << std::ifstream{testSrc}.rdbuf()).str();
 
@@ -40,20 +41,20 @@ void openDocument(Connection &connection) {
             },
     };
 
-    connection.notification(params);
+    client.notify(params);
 
-    getSymbolKinds(connection);
+    getSymbolKinds(client);
 }
 
-void completeTest(Connection &connection) {
+void completeTest(LspClient &client) {
     auto params = CompletionParams{};
     params.textDocument.uri = "file://" + testSrc.string();
     params.position.line = 3;
-    connection.request(params, justPrint<CompletionList>);
+    client.request(params, justPrint<CompletionList>);
 }
 
-void test1(Connection &connection) {
-    connection.request(InitializeParams{}, [](const nlohmann::json &j) {
+void test1(LspClient &client) {
+    client.request(InitializeParams{}, [](const nlohmann::json &j) {
         std::cout << "initialization response:\n";
         std::cout << std::setw(2) << j << std::endl;
     });
@@ -63,9 +64,9 @@ void test1(Connection &connection) {
     // from being closed prematurely
     std::this_thread::sleep_for(100ms);
 
-    openDocument(connection);
+    openDocument(client);
 
-    completeTest(connection);
+    completeTest(client);
 
     std::this_thread::sleep_for(1s);
 }
@@ -81,27 +82,25 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    auto connection = Connection{argstr};
+    auto client = LspClient{argstr};
 
-    connection.subscribe(
-        std::function{[](const PublishDiagnosticsParams &params) {
-            std::cout << "hello notification!\n";
-            std::cout << "registered notification" << std::endl;
-            std::cout << std::setw(2);
-            std::cout << nlohmann::json{params} << std::endl;
+    client.subscribe(std::function{[](const PublishDiagnosticsParams &params) {
+        std::cout << "hello notification!\n";
+        std::cout << "registered notification" << std::endl;
+        std::cout << std::setw(2);
+        std::cout << nlohmann::json{params} << std::endl;
 
-            for (auto &d : params.diagnostics) {
-                std::cout << d.range.start.line << ":" << d.message
-                          << std::endl;
-            }
-        }});
+        for (auto &d : params.diagnostics) {
+            std::cout << d.range.start.line << ":" << d.message << std::endl;
+        }
+    }});
 
-    connection.callback([](auto &&j) {
+    client.callback([](auto &&j) {
         std::cout << "unregistered notification:\n";
         std::cout << std::setw(2) << j << std::endl;
     });
 
-    test1(connection);
+    test1(client);
 
     return 0;
 }
