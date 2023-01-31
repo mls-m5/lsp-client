@@ -146,7 +146,7 @@ struct DocumentSymbol {
      * determine if the clients cursor is inside the symbol to reveal in the
      * symbol in the UI.
      */
-    Range range;
+    Location location;
 
     /**
      * The range that should be selected and revealed when this symbol is being
@@ -160,5 +160,11 @@ struct DocumentSymbol {
     std::vector<DocumentSymbol> children;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(
-    DocumentSymbol, name, detail, kind, tags, range, selectionRange, children);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(DocumentSymbol,
+                                                name,
+                                                detail,
+                                                kind,
+                                                tags,
+                                                location,
+                                                selectionRange,
+                                                children);

@@ -43,6 +43,13 @@ void openDocument(Connection &connection) {
     getSymbolKinds(connection);
 }
 
+void completeTest(Connection &connection) {
+    auto params = CompletionParams{};
+    params.textDocument.uri = "file://" + testSrc.string();
+    params.position.line = 3;
+    connection.request(params, justPrint<CompletionList>);
+}
+
 void test1(Connection &connection) {
     connection.request(InitializeParams{}, [](const nlohmann::json &j) {
         std::cout << "initialization response:\n";
@@ -55,6 +62,8 @@ void test1(Connection &connection) {
     std::this_thread::sleep_for(100ms);
 
     openDocument(connection);
+
+    completeTest(connection);
 
     std::this_thread::sleep_for(1s);
 }
