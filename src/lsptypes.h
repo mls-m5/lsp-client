@@ -4,6 +4,7 @@
 #include <optional>
 
 using DocumentUri = std::string;
+using URI = std::string;
 using Integer = long;
 using UInteger = long;
 
@@ -66,3 +67,10 @@ struct Range {
 };
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Range, start, end);
+
+struct Location {
+    DocumentUri uri;
+    Range range;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Location, uri, range);

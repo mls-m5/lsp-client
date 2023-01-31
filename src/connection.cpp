@@ -82,7 +82,7 @@ void Connection::readIn() {
             auto json = nlohmann::json{};
             in >> json;
 
-            if (!_handling(json)) {
+            if (!_handling(json) && !_subscriptions(json)) {
                 _callback(json);
             }
 

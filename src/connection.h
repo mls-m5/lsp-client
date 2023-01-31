@@ -2,6 +2,7 @@
 
 #include "nlohmann/json.hpp"
 #include "requestqueue.h"
+#include "subscriptions.h"
 #include <fstream>
 #include <thread>
 
@@ -75,9 +76,23 @@ struct Connection {
         send(method, value, id);
     }
 
+    /// Send notification from the client to the server
     template <typename T>
     void notification(const T &value) {
-        send(value, -1);
+        send(T::method, value, -1);
+    }
+
+    template <typename NotificationT>
+    using SubscriptionCallbackT = std::function<void(NotificationT)>;
+
+    template <typename T>
+    void subscribe(std::function<void(const T &)> callback) {
+        _subscriptions.subscribe<T>(callback);
+    }
+
+    template <typename T>
+    void unsubscribe() {
+        _subscriptions.unsubcribe<T>();
     }
 
 private:
@@ -102,4 +117,5 @@ private:
     std::thread clangdThread;
 
     RequestQueue _handling;
+    Subscriptions _subscriptions;
 };

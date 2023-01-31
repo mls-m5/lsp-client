@@ -58,6 +58,14 @@ void test1(Connection &connection) {
 int main(int argc, char *argv[]) {
     auto connection = Connection{};
 
+    connection.subscribe(
+        std::function{[](const PublishDiagnosticsParams &params) {
+            std::cout << "hello notification!\n";
+            std::cout << "registered notification" << std::endl;
+            std::cout << std::setw(2);
+            std::cout << nlohmann::json{params};
+        }});
+
     connection.callback([](auto &&j) {
         std::cout << "unregistered notification:\n";
         std::cout << std::setw(2) << j << std::endl;
