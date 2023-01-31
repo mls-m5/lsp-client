@@ -2,6 +2,8 @@
 
 #include "lsptypes.h"
 
+namespace lsp {
+
 enum class DiagnosticSeverity {
     /// The it's often technically optional some times
     Undefined = 0,
@@ -182,3 +184,5 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(PublishDiagnosticsParams,
                                                 uri,
                                                 version,
                                                 diagnostics);
+
+} // namespace lsp

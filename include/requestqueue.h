@@ -4,6 +4,8 @@
 #include <functional>
 #include <mutex>
 
+namespace lsp {
+
 // Match responses with requests made
 struct RequestQueue {
     using CallbackT = std::function<void(const nlohmann::json &)>;
@@ -41,3 +43,5 @@ private:
     std::mutex _queueMutex;
     std::vector<std::pair<long, CallbackT>> _waitingQueue;
 };
+
+} // namespace lsp

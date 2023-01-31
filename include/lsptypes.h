@@ -3,6 +3,8 @@
 #include "nlohmann/json.hpp"
 #include <optional>
 
+namespace lsp {
+
 using DocumentUri = std::string;
 using URI = std::string;
 using Integer = long;
@@ -168,3 +170,4 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(DocumentSymbol,
                                                 location,
                                                 selectionRange,
                                                 children);
+} // namespace lsp

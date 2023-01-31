@@ -1,6 +1,8 @@
 #include "clangversion.h"
 #include <iostream>
 
+namespace lsp {
+
 std::filesystem::path getClangVersion() {
     for (int i = 100; i > 1; --i) {
         auto path =
@@ -19,3 +21,5 @@ std::filesystem::path getClangVersion() {
 
     return "clangd";
 }
+
+} // namespace lsp

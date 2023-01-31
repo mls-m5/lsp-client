@@ -5,6 +5,8 @@
 #include "lsptypes.h"
 #include "nlohmann/json.hpp"
 
+namespace lsp {
+
 struct ClientInfo {
     std::string name = "clangd-client";
     std::string version = "0";
@@ -542,3 +544,5 @@ struct CompletionList {
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(CompletionList,
                                                 isIncomplete,
                                                 items);
+
+} // namespace lsp

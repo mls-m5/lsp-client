@@ -6,6 +6,8 @@
 #include <fstream>
 #include <thread>
 
+namespace lsp {
+
 struct Connection {
     Connection(std::string args);
     ~Connection();
@@ -126,5 +128,7 @@ private:
 
     std::string args;
 
-    bool isClangDRunning = false;
+    bool isServerRunning = false;
 };
+
+} // namespace lsp

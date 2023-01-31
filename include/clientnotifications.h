@@ -2,6 +2,8 @@
 
 #include "lsptypes.h"
 
+namespace lsp {
+
 enum TextDocumentSyncKind {
     None = 0,
     Full = 1,
@@ -58,3 +60,5 @@ struct DidChangeTextDocumentParams {
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DidChangeTextDocumentParams,
                                    textDocument,
                                    contentChanges);
+
+} // namespace lsp

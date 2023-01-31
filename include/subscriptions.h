@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+namespace lsp {
+
 struct Subscriptions {
     using CallbackT = std::function<void(const nlohmann::json &)>;
 
@@ -46,3 +48,5 @@ struct Subscriptions {
 
     std::vector<std::pair<std::string, CallbackT>> _subscriptions;
 };
+
+} // namespace lsp

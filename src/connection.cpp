@@ -14,6 +14,8 @@ void createFifo(std::filesystem::path path) {
 }
 } // namespace
 
+namespace lsp {
+
 Connection::Connection(std::string args)
     : args{args} {
     inPath = "lsp-in-pipe-" + std::to_string(randomNumber(10000));
@@ -53,7 +55,7 @@ void Connection::sendRaw(const nlohmann::json &json) {
         return ss.str();
     }();
 
-    if (!isClangDRunning) {
+    if (!isServerRunning) {
         std::cerr << "clangd is not running, probably an error\n";
     }
 
@@ -114,7 +116,9 @@ void Connection::startClangd() {
     ss << clangd << " " << args << " > " << inPath << " < " << outPath << " 2> "
        << errorPath;
     std::cout << "starting clangd with: " << ss.str() << std::endl;
-    isClangDRunning = true;
+    isServerRunning = true;
     std::system(ss.str().c_str());
-    isClangDRunning = false;
+    isServerRunning = false;
 }
+
+} // namespace lsp

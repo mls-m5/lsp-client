@@ -4,6 +4,8 @@
 #include <iostream>
 #include <sstream>
 
+using namespace lsp;
+
 std::filesystem::path testSrc =
     std::filesystem::absolute("tests/testsrc/test1.cpp");
 
