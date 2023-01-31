@@ -1,7 +1,7 @@
-#include "connection.h"
-#include "clangversion.h"
+#include "lsp/connection.h"
+#include "lsp/clangversion.h"
+#include "lsp/randomutil.h"
 #include "nlohmann/json.hpp"
-#include "randomutil.h"
 #include <filesystem>
 #include <iostream>
 #include <sstream>

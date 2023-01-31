@@ -1,7 +1,6 @@
-#include "connection.h"
-#include "lspclient.h"
-#include "notifications.h"
-#include "requests.h"
+#include "lsp/lspclient.h"
+#include "lsp/notifications.h"
+#include "lsp/requests.h"
 #include <iostream>
 #include <sstream>
 
