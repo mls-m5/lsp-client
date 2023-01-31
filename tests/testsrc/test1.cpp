@@ -1,7 +1,11 @@
 #include <iostream>
 
+void apa() {
+    std::cout << "apeliap!\n";
+}
+
 int main() {
     std::cout << "hello\n";
 
-    this should be an error;
+    apa();
 }

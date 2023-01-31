@@ -61,19 +61,23 @@ struct Connection {
         }
     }
 
-    template <typename T>
-    void request(const T &value, CallbackT callback) {
-        auto id = ++_messageId;
-        _handling.waitFor(id, callback);
-        send(value, id);
-    }
-
     void request(std::string_view method,
                  const nlohmann::json &value,
                  CallbackT callback) {
         auto id = ++_messageId;
         _handling.waitFor(id, callback);
         send(method, value, id);
+    }
+
+    template <typename ReqT, typename FT>
+    void request(const ReqT &value, FT callback) {
+        CallbackT f = [callback](const nlohmann::json &json) {
+            callback(json["result"]);
+        };
+
+        auto id = ++_messageId;
+        _handling.waitFor(id, f);
+        send(value, id);
     }
 
     /// Send notification from the client to the server

@@ -16,11 +16,11 @@ void createFifo(std::filesystem::path path) {
 
 Connection::Connection(std::string args)
     : args{args} {
-    inPath = "in-" + std::to_string(randomNumber(10000));
+    inPath = "lsp-in-pipe-" + std::to_string(randomNumber(10000));
     createFifo(inPath);
-    outPath = "out-" + std::to_string(randomNumber(10000));
+    outPath = "lsp-out-pipe-" + std::to_string(randomNumber(10000));
     createFifo(outPath);
-    errorPath = "error-" + std::to_string(randomNumber(10000));
+    errorPath = "lsp-error-pipe-" + std::to_string(randomNumber(10000));
     createFifo(errorPath);
 
     clangdThread = std::thread{[this] { startClangd(); }};

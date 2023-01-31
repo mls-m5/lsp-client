@@ -210,5 +210,12 @@ CompileFlags:
 
 to `~/.config/clangd/config.yaml`
 
+
+Another possibility is to use environment variables like so:
+
+```
+CPLUS_INCLUDE_PATH=/usr/include/c++/11:/usr/include/x86_64-linux-gnu/c++/11:/usr/include/c++/11/backward:/usr/lib/gcc/x86_64-linux-gnu/11/include:/usr/local/include:/usr/include/x86_64-linux-gnu -I/usr/include
+```
+
 ## References
 https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/

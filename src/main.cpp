@@ -9,8 +9,9 @@ std::filesystem::path testSrc =
 
 using namespace std::literals;
 
-void justPrint(const nlohmann::json &json) {
-    std::cout << std::setw(4) << json << std::endl;
+template <typename T = nlohmann::json>
+void justPrint(const T &json) {
+    std::cout << std::setw(4) << nlohmann::json{json} << std::endl;
 }
 
 void getSymbolKinds(Connection &connection) {
@@ -20,7 +21,7 @@ void getSymbolKinds(Connection &connection) {
     auto params = DocumentSymbolParams{
         .textDocument = {.uri = "file://" + testSrc.string()}};
 
-    connection.request(params, justPrint);
+    connection.request(params, justPrint<std::vector<DocumentSymbol>>);
 }
 
 void openDocument(Connection &connection) {
@@ -76,7 +77,12 @@ int main(int argc, char *argv[]) {
             std::cout << "hello notification!\n";
             std::cout << "registered notification" << std::endl;
             std::cout << std::setw(2);
-            std::cout << nlohmann::json{params};
+            std::cout << nlohmann::json{params} << std::endl;
+
+            for (auto &d : params.diagnostics) {
+                std::cout << d.range.start.line << ":" << d.message
+                          << std::endl;
+            }
         }});
 
     connection.callback([](auto &&j) {
