@@ -180,5 +180,35 @@ Content-Length: 1734
 
 Just slapped on a gnu licence.
 
+## Include flags
+
+By default, clangd does not seem to find any include files at all, not even
+the standard includes.
+
+https://github.com/clangd/clangd/issues/617
+
+This should work in theory, but in practice does not work
+```
+export CLANGD_FLAGS="-I/usr/include/c++/11 --log=Verbose"
+```
+
+Another possibility is to use query-drivers
+https://releases.llvm.org/10.0.0/tools/clang/tools/extra/docs/clangd/Configuration.html
+
+Did not work either. But I found a command that clang seems to be using
+internally when running with verbosity on
+
+It seems like that the only working solution is to edit `~/.config/clangd/config.yaml`
+
+Run `g++ -E -xc++ -v /dev/null` and get all paths to all standard include stuff
+
+Then add (replace with what includes you found)
+```
+CompileFlags:
+  Add: [-I/usr/include/c++/11, -I/usr/include/x86_64-linux-gnu/c++/11, -I/usr/include/c++/11/backward, -I/usr/lib/gcc/x86_64-linux-gnu/11/include, -I/usr/local/include, -I/usr/include/x86_64-linux-gnu, -I/usr/include]
+```
+
+to `~/.config/clangd/config.yaml`
+
 ## References
 https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/

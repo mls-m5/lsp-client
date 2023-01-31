@@ -4,6 +4,9 @@
 #include <iostream>
 #include <sstream>
 
+std::filesystem::path testSrc =
+    std::filesystem::absolute("tests/testsrc/test1.cpp");
+
 using namespace std::literals;
 
 void justPrint(const nlohmann::json &json) {
@@ -12,22 +15,22 @@ void justPrint(const nlohmann::json &json) {
 
 void getSymbolKinds(Connection &connection) {
     auto content =
-        (std::ostringstream{} << std::ifstream{"src/main.cpp"}.rdbuf()).str();
+        (std::ostringstream{} << std::ifstream{testSrc}.rdbuf()).str();
 
-    auto params =
-        DocumentSymbolParams{.textDocument = {.uri = "file://src/main.cpp"}};
+    auto params = DocumentSymbolParams{
+        .textDocument = {.uri = "file://" + testSrc.string()}};
 
     connection.request(params, justPrint);
 }
 
 void openDocument(Connection &connection) {
     auto content =
-        (std::ostringstream{} << std::ifstream{"src/main.cpp"}.rdbuf()).str();
+        (std::ostringstream{} << std::ifstream{testSrc}.rdbuf()).str();
 
     auto params = DidOpenTextDocumentParams{
         .textDocument =
             TextDocumentItem{
-                .uri = "file://src/main.cpp",
+                .uri = "file://" + testSrc.string(),
                 .languageId = "cpp",
                 .version = 1,
                 .text = content,
@@ -56,7 +59,17 @@ void test1(Connection &connection) {
 }
 
 int main(int argc, char *argv[]) {
-    auto connection = Connection{};
+
+    std::string argstr;
+    {
+        // Use this to pass for example "--compile-commands-dir="
+        auto args = std::vector<std::string>{argv + 1, argv + argc};
+        for (auto &arg : args) {
+            argstr += " " + arg;
+        }
+    }
+
+    auto connection = Connection{argstr};
 
     connection.subscribe(
         std::function{[](const PublishDiagnosticsParams &params) {

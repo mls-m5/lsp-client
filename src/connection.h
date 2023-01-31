@@ -7,7 +7,7 @@
 #include <thread>
 
 struct Connection {
-    Connection();
+    Connection(std::string args);
     ~Connection();
 
     using CallbackT = std::function<void(const nlohmann::json &)>;
@@ -115,7 +115,12 @@ private:
 
     std::thread thread;
     std::thread clangdThread;
+    std::thread errorThread;
 
     RequestQueue _handling;
     Subscriptions _subscriptions;
+
+    std::string args;
+
+    bool isClangDRunning = false;
 };

@@ -6,12 +6,19 @@ add_executable(
     clangd-client
     src/main.cpp
     src/connection.cpp
+    src/clangversion.cpp
     )
 
 target_compile_features(
     clangd-client
     PRIVATE
     cxx_std_17
+    )
+
+target_include_directories(
+    clangd-client
+    PRIVATE
+    src
     )
 
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
@@ -34,3 +41,4 @@ target_link_libraries(
 
 
 file(COPY src DESTINATION .)
+file(COPY tests DESTINATION .)

@@ -1,4 +1,5 @@
 #include "connection.h"
+#include "clangversion.h"
 #include "randomutil.h"
 #include <filesystem>
 #include <iostream>
@@ -13,7 +14,8 @@ void createFifo(std::filesystem::path path) {
 }
 } // namespace
 
-Connection::Connection() {
+Connection::Connection(std::string args)
+    : args{args} {
     inPath = "in-" + std::to_string(randomNumber(10000));
     createFifo(inPath);
     outPath = "out-" + std::to_string(randomNumber(10000));
@@ -22,6 +24,8 @@ Connection::Connection() {
     createFifo(errorPath);
 
     clangdThread = std::thread{[this] { startClangd(); }};
+    errorThread = std::thread{
+        [this] { std::system(("cat " + errorPath.string()).c_str()); }};
 
     thread = std::thread{[this] { readIn(); }};
 
@@ -35,6 +39,7 @@ Connection::~Connection() {
     error.close();
     thread.join();
     clangdThread.join();
+    errorThread.join();
 
     std::filesystem::remove(inPath);
     std::filesystem::remove(outPath);
@@ -47,6 +52,10 @@ void Connection::sendRaw(const nlohmann::json &json) {
         ss << std::setw(2) << json;
         return ss.str();
     }();
+
+    if (!isClangDRunning) {
+        std::cerr << "clangd is not running, probably an error\n";
+    }
 
     out << "Content-Length: " << str.length() << "\r\n";
     out << "\r\n";
@@ -101,7 +110,11 @@ void Connection::readIn() {
 
 void Connection::startClangd() {
     auto ss = std::ostringstream{};
-    ss << "clangd > " << inPath << " < " << outPath << " 2> " << errorPath;
+    auto clangd = getClangVersion();
+    ss << clangd << " " << args << " > " << inPath << " < " << outPath << " 2> "
+       << errorPath;
     std::cout << "starting clangd with: " << ss.str() << std::endl;
+    isClangDRunning = true;
     std::system(ss.str().c_str());
+    isClangDRunning = false;
 }
