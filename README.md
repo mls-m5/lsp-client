@@ -208,7 +208,8 @@ CompileFlags:
   Add: [-I/usr/include/c++/11, -I/usr/include/x86_64-linux-gnu/c++/11, -I/usr/include/c++/11/backward, -I/usr/lib/gcc/x86_64-linux-gnu/11/include, -I/usr/local/include, -I/usr/include/x86_64-linux-gnu, -I/usr/include]
 ```
 
-to `~/.config/clangd/config.yaml`
+to `~/.config/clangd/config.yaml` or `.clangd` inside your project directiory.
+You could also add project specific include paths there.
 
 
 Another possibility is to use environment variables like so:
