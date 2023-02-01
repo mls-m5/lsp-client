@@ -59,6 +59,7 @@ void Connection::send(const nlohmann::json &json) {
 
     if (!_isServerRunning) {
         std::cerr << "clangd is not running, probably an error\n";
+        throw std::runtime_error{"clangd is not running"};
     }
 
     _out << "Content-Length: " << str.length() << "\r\n";

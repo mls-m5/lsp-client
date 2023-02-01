@@ -114,11 +114,11 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CompletionContext,
                                    triggerKind,
                                    triggerCharacter);
 
-/// Result is of typestruct CompletionList
 struct CompletionParams : public TextDocumentPositionParams,
                           public WorkDoneProgressParams,
                           public PartialResultParams {
     static constexpr std::string_view method = "textDocument/completion";
+    using ResultT = struct CompletionList;
     /**
      * The completion context. This is only available if the client specifies
      * to send this using the client capability
@@ -278,31 +278,31 @@ struct CompletionItem {
      *
      * @since 3.17.0
      */
-    //    labelDetails ?: CompletionItemLabelDetails;
     CompletionItemLabelDetails labelDetails;
+    //    labelDetails ?: CompletionItemLabelDetails;
 
     /**
      * The kind of this completion item. Based of the kind
      * an icon is chosen by the editor. The standardized set
      * of available values is defined in `CompletionItemKind`.
      */
-    //    kind ?: CompletionItemKind;
     CompletionItemKind kind;
+    //    kind ?: CompletionItemKind;
 
     /**
      * Tags for this completion item.
      *
      * @since 3.15.0
      */
-    //    tags ?: CompletionItemTag[];
     std::vector<CompletionItemTag> tags;
+    //    tags ?: CompletionItemTag[];
 
     /**
      * A human-readable string with additional information
      * about this item, like type or symbol information.
      */
-    //    detail ?: string;
     std::string detail;
+    //    detail ?: string;
 
     /**
      * A human-readable string that represents a doc-comment.
@@ -323,24 +323,24 @@ struct CompletionItem {
      * tool / client decides which item that is. The rule is that the *first*
      * item of those that match best is selected.
      */
-    //    preselect ?: boolean;
     bool preselect = false;
+    //    preselect ?: boolean;
 
     /**
      * A string that should be used when comparing this item
      * with other items. When `falsy` the label is used
      * as the sort text for this item.
      */
-    //    sortText ?: string;
     std::string sortText;
+    //    sortText ?: string;
 
     /**
      * A string that should be used when filtering a set of
      * completion items. When `falsy` the label is used as the
      * filter text for this item.
      */
-    //    filterText ?: string;
     std::string filterText;
+    //    filterText ?: string;
 
     /**
      * A string that should be inserted into a document when selecting
@@ -355,8 +355,8 @@ struct CompletionItem {
      * recommended to use `textEdit` instead since it avoids additional client
      * side interpretation.
      */
-    //    insertText ?: string;
     std::string insertText;
+    //    insertText ?: string;
 
     /**
      * The format of the insert text. The format applies to both the
@@ -366,8 +366,8 @@ struct CompletionItem {
      * Please note that the insertTextFormat doesn't apply to
      * `additionalTextEdits`.
      */
-    //    insertTextFormat ?: InsertTextFormat;
     InsertTextFormat insertTextFormat;
+    //    insertTextFormat ?: InsertTextFormat;
 
     /**
      * How whitespace and indentation is handled during completion
@@ -377,8 +377,8 @@ struct CompletionItem {
      * @since 3.16.0
      * @since 3.17.0 - support for `textDocument.completion.insertTextMode`
      */
-    //    insertTextMode ?: InsertTextMode;
     InsertTextMode insertTextMode;
+    //    insertTextMode ?: InsertTextMode;
 
     /**
      * An edit which is applied to a document when selecting this completion.
@@ -404,8 +404,8 @@ struct CompletionItem {
      *
      * @since 3.16.0 additional type `InsertReplaceEdit`
      */
-    //    textEdit ?: TextEdit | InsertReplaceEdit;
     TextEdit textEdit;
+    //    textEdit ?: TextEdit | InsertReplaceEdit;
 
     /**
      * The edit text used if the completion item is part of a CompletionList and
@@ -461,6 +461,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(CompletionItem,
                                                 detail,
                                                 preselect,
                                                 sortText,
+                                                filterText,
                                                 insertText,
                                                 insertTextFormat,
                                                 insertTextMode,

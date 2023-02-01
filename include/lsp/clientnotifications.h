@@ -17,21 +17,41 @@ struct DidOpenTextDocumentParams {
      */
     TextDocumentItem textDocument;
 };
-
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DidOpenTextDocumentParams, textDocument)
 
 struct TextDocumentContentChangeEvent {
-    Range range;
-    Integer rangeLength;
+    std::optional<Range> range;
+    std::optional<Integer> rangeLength;
     std::string text;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(TextDocumentContentChangeEvent,
-                                                range,
-                                                rangeLength,
-                                                text);
+void to_json(nlohmann::json &j, const TextDocumentContentChangeEvent &e) {
+    if (e.range) {
+        to_json(j["range"], *e.range);
+    }
+    if (e.rangeLength) {
+        j["rangeLength"] = *e.rangeLength;
+    }
+    j["text"] = e.text;
+}
+
+void from_json(const nlohmann::json &j, TextDocumentContentChangeEvent &e) {
+    if (auto it = j.find("range"); it != j.end()) {
+        e.range = it->get<Range>();
+    }
+    if (auto it = j.find("rangeLength"); it != j.end()) {
+        e.rangeLength = *it;
+    }
+    j.at("text").get_to(e.text);
+}
+
+// NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(TextDocumentContentChangeEvent,
+//                                                 range,
+//                                                 rangeLength,
+//                                                 text);
 
 struct DidChangeTextDocumentParams {
+    static constexpr std::string_view method = "textDocument/didChange";
     /**
      * The document that did change. The version number points
      * to the version after all provided content changes have
