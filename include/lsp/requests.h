@@ -4,6 +4,7 @@
 
 #include "lsptypes.h"
 #include "nlohmann/json.hpp"
+#include <variant>
 
 namespace lsp {
 
@@ -34,10 +35,13 @@ struct WorkDoneProgressParams {
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(WorkDoneProgressParams,
                                                 workDoneToken)
 
+/// Get types for annotating with nice colors
 struct DocumentSymbolParams : public WorkDoneProgressParams
 /*, PartialResultParams*/ {
 
     static constexpr std::string_view method = "textDocument/documentSymbol";
+
+    using ReturnT = std::vector<DocumentSymbol>;
 
     TextDocumentIdentifier textDocument;
 };
@@ -545,5 +549,102 @@ struct CompletionList {
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(CompletionList,
                                                 isIncomplete,
                                                 items);
+
+struct TypeDefinitionParams : public TextDocumentPositionParams,
+                              public WorkDoneProgressParams,
+                              public PartialResultParams {
+    static constexpr std::string_view method = "textDocument/definition";
+
+    // Probably just Location
+    using ResultT = std::variant<Location, std::vector<Location>, LocationLink>;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(TypeDefinitionParams,
+                                                textDocument,
+                                                position,
+                                                workDoneToken,
+                                                partialResultToken);
+
+// -------------------------
+
+/**
+ * A document highlight kind.
+ */
+enum class DocumentHighlightKind {
+    /**
+     * A textual occurrence.
+     */
+    Text = 1,
+
+    /**
+     * Read-access of a symbol, like reading a variable.
+     */
+    Read = 2,
+
+    /**
+     * Write-access of a symbol, like writing to a variable.
+     */
+    Write = 3,
+};
+
+struct DocumentHighlight {
+    /**
+     * The range this highlight applies to.
+     */
+    Range range;
+
+    /**
+     * The highlight kind, default is DocumentHighlightKind.Text.
+     */
+
+    DocumentHighlightKind kind = DocumentHighlightKind::Text;
+};
+
+struct DocumentHighlightParams : public TextDocumentPositionParams,
+                                 public WorkDoneProgressParams,
+                                 public PartialResultParams {
+
+    static constexpr std::string_view method = "textDocument/definition";
+
+    using ResultT = std::vector<DocumentHighlight>;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(DocumentHighlightParams,
+                                                textDocument,
+                                                position,
+                                                workDoneToken,
+                                                partialResultToken);
+
+struct SemanticTokens {
+    /**
+     * An optional result id. If provided and clients support delta updating
+     * the client will include the result id in the next semantic token request.
+     * A server can then instead of computing all semantic tokens again simply
+     * send a delta.
+     */
+    std::string resultId;
+    //   resultId?: string;
+
+    /**
+     * The actual tokens.
+     */
+    std::vector<UInteger> data;
+    //   data: uinteger[];
+};
+
+struct SemanticTokensParams : public WorkDoneProgressParams,
+                              public PartialResultParams {
+
+    static constexpr std::string_view method =
+        "textDocument/semanticTokens/full";
+
+    using ResultT = SemanticTokens;
+    /**
+     * The text document.
+     */
+    TextDocumentIdentifier textDocument;
+
+    // TODO: Work in progress...
+};
 
 } // namespace lsp
