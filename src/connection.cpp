@@ -70,12 +70,12 @@ void Connection::send(const nlohmann::json &json) {
     _out << str;
     _out << std::endl;
 
-    {
-        std::cout << "sending:\n";
-        std::cout << "Content-Length: " << str.length() << "\r\n";
-        std::cout << "\r\n";
-        std::cout << str << std::endl;
-    }
+    //    {
+    //        std::cout << "sending:\n";
+    //        std::cout << "Content-Length: " << str.length() << "\r\n";
+    //        std::cout << "\r\n";
+    //        std::cout << str << std::endl;
+    //    }
 }
 
 void Connection::readIn() {
@@ -110,7 +110,7 @@ void Connection::readIn() {
             contentLength = std::stol(line.substr(contentLengthStr.size()));
         }
 
-        std::cout << line << std::endl;
+        //        std::cout << line << std::endl;
     }
 }
 
@@ -119,7 +119,7 @@ void Connection::startClangd() {
     auto clangd = getClangVersion();
     ss << clangd << " " << _args << " > " << _inPath << " < " << _outPath
        << " 2> " << _errorPath;
-    std::cout << "starting clangd with: " << ss.str() << std::endl;
+    //    std::cout << "starting clangd with: " << ss.str() << std::endl;
     _isServerRunning = true;
     std::system(ss.str().c_str());
     _isServerRunning = false;
