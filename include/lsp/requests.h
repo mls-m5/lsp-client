@@ -631,6 +631,7 @@ struct SemanticTokens {
     std::vector<UInteger> data;
     //   data: uinteger[];
 };
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SemanticTokens, resultId, data);
 
 struct SemanticTokensParams : public WorkDoneProgressParams,
                               public PartialResultParams {
@@ -646,5 +647,8 @@ struct SemanticTokensParams : public WorkDoneProgressParams,
 
     // TODO: Work in progress...
 };
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SemanticTokensParams,
+                                                textDocument,
+                                                workDoneToken)
 
 } // namespace lsp

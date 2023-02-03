@@ -148,6 +148,52 @@ enum class SymbolTag {
     Deprecated = 1,
 };
 
+enum class SemanticTokenTypes {
+    Namespace,
+    /**
+     * Represents a generic type. Acts as a fallback for types which
+     * can't be mapped to a specific type like class or enum.
+     */
+    Type,
+    Class,
+    Enum,
+    Interface,
+    Struct,
+    TypeParameter,
+    Parameter,
+    Variable,
+    Property,
+    EnumMember,
+    Event,
+    Function,
+    Method,
+    Macro,
+    Keyword,
+    Modifier,
+    Comment,
+    String,
+    Number,
+    Regexp,
+    Operator,
+    /**
+     * @since 3.17.0
+     */
+    Decorator,
+};
+
+enum class SemanticTokenModifiers {
+    Declaration,
+    Definition,
+    Readonly,
+    Static,
+    Deprecated,
+    Abstract,
+    Async,
+    Modification,
+    Documentation,
+    DefaultLibrary
+};
+
 /**
  * Represents programming constructs like variables, classes, interfaces etc.
  * that appear in a document. Document symbols can be hierarchical and they
@@ -200,12 +246,12 @@ struct DocumentSymbol {
     std::vector<DocumentSymbol> children;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DocumentSymbol,
-                                   name,
-                                   detail,
-                                   kind,
-                                   tags,
-                                   location,
-                                   selectionRange,
-                                   children);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(DocumentSymbol,
+                                                name,
+                                                detail,
+                                                kind,
+                                                tags,
+                                                location,
+                                                selectionRange,
+                                                children);
 } // namespace lsp
