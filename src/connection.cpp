@@ -20,11 +20,14 @@ namespace lsp {
 Connection::Connection(std::string args, CallbackT callback)
     : _args{args}
     , _callback{callback} {
-    _inPath = "lsp-in-pipe-" + std::to_string(randomNumber(10000));
+
+    auto tmp = std::filesystem::temp_directory_path();
+    _inPath = tmp / ("lsp-in-pipe-" + std::to_string(randomNumber(100000)));
     createFifo(_inPath);
-    _outPath = "lsp-out-pipe-" + std::to_string(randomNumber(10000));
+    _outPath = tmp / ("lsp-out-pipe-" + std::to_string(randomNumber(100000)));
     createFifo(_outPath);
-    _errorPath = "lsp-error-pipe-" + std::to_string(randomNumber(10000));
+    _errorPath =
+        tmp / ("lsp-error-pipe-" + std::to_string(randomNumber(100000)));
     createFifo(_errorPath);
 
     _clangdThread = std::thread{[this] { startClangd(); }};
