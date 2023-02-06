@@ -1,15 +1,16 @@
 
 add_executable(
-    test-client
+    lsp-test-client
     test1.cpp
     )
 
 target_link_libraries(
-    test-client
+    lsp-test-client
     PUBLIC
     lsp-client
     )
 
-add_test(COMMAND test-client)
-
-enable_testing()
+# This would require all project including this project to have clangd
+# installed
+#add_test(COMMAND test-client)
+#enable_testing()
