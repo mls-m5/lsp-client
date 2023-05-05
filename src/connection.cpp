@@ -3,6 +3,7 @@
 #include "lsp/randomutil.h"
 #include "nlohmann/json.hpp"
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 
@@ -41,10 +42,14 @@ Connection::Connection(std::string args, CallbackT callback)
 }
 
 Connection::~Connection() {
+    _abort = true;
+
+    std::ofstream{_inPath}
+        << std::endl; // Force the in thread to check if abort is called
+    _thread.join();
     _in.close();
     _out.close();
     _error.close();
-    _thread.join();
     _clangdThread.join();
     _errorThread.join();
 
@@ -87,6 +92,9 @@ void Connection::readIn() {
     auto contentTypeStr = "Content-Type: "sv;
 
     for (std::string line; std::getline(_in, line);) {
+        if (_abort) {
+            break;
+        }
         if (line.empty()) {
             continue;
         }
@@ -110,7 +118,9 @@ void Connection::readIn() {
             contentLength = std::stol(line.substr(contentLengthStr.size()));
         }
 
-        //        std::cout << line << std::endl;
+        if (_abort) {
+            break;
+        }
     }
 }
 

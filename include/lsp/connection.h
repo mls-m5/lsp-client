@@ -37,6 +37,7 @@ private:
     std::string _args;
 
     bool _isServerRunning = false;
+    bool _abort = false;
 };
 
 } // namespace lsp
