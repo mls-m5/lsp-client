@@ -651,4 +651,80 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SemanticTokensParams,
                                                 textDocument,
                                                 workDoneToken)
 
+/// The rename request is sent from the client to the server to ask the server
+/// to compute a workspace change so that the client can perform a
+/// workspace-wide rename of a symbol.
+/// The result is a WorkspaceEdit
+struct RenameParams : public TextDocumentPositionParams,
+                      WorkDoneProgressParams {
+    static constexpr std::string_view method = "textDocument/rename";
+    /**
+     * The new name of the symbol. If the given name is not valid the
+     * request must return a [ResponseError](#ResponseError) with an
+     * appropriate message set.
+     */
+    std::string newName;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(
+    RenameParams, textDocument, position, workDoneToken, newName)
+
+/// A workspace edit represents changes to many resources managed in the
+/// workspace. The edit should either provide changes or documentChanges. If the
+/// client can handle versioned document edits and if documentChanges are
+/// present, the latter are preferred over changes.
+struct WorkspaceEdit {
+    /**
+     * Holds changes to existing resources.
+     */
+    //    changes?: { [uri: DocumentUri]: TextEdit[]; };
+    std::vector<std::unordered_map<std::string, TextEdit>> changes;
+
+    /**
+     * Depending on the client capability
+     * `workspace.workspaceEdit.resourceOperations` document changes are either
+     * an array of `TextDocumentEdit`s to express changes to n different text
+     * documents where each text document edit addresses a specific version of
+     * a text document. Or it can contain above `TextDocumentEdit`s mixed with
+     * create, rename and delete file / folder operations.
+     *
+     * Whether a client supports versioned document edits is expressed via
+     * `workspace.workspaceEdit.documentChanges` client capability.
+     *
+     * If a client neither supports `documentChanges` nor
+     * `workspace.workspaceEdit.resourceOperations` then only plain `TextEdit`s
+     * using the `changes` property are supported.
+     */
+    //    documentChanges?: (
+    //                           TextDocumentEdit[] |
+    //                           (TextDocumentEdit | CreateFile | RenameFile |
+    //                           DeleteFile)[]
+    //                           );
+
+    /**
+     * A map of change annotations that can be referenced in
+     * `AnnotatedTextEdit`s or create, rename and delete file / folder
+     * operations.
+     *
+     * Whether clients honor this property depends on the client capability
+     * `workspace.changeAnnotationSupport`.
+     *
+     * @since 3.16.0
+     */
+    //    changeAnnotations?: {
+    //        [id: string /* ChangeAnnotationIdentifier */]: ChangeAnnotation;
+    //    };
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(WorkspaceEdit, changes)
+
+/// The prepare rename request is sent from the client to the server to setup
+/// and test the validity of a rename operation at a given location.
+struct PrepareRenameParams : public TextDocumentPositionParams,
+                             WorkDoneProgressParams {
+    static constexpr std::string_view method = "textDocument/prepareRename";
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(PrepareRenameParams,
+                                                textDocument,
+                                                position,
+                                                workDoneToken)
+
 } // namespace lsp
