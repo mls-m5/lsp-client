@@ -677,7 +677,7 @@ struct WorkspaceEdit {
      * Holds changes to existing resources.
      */
     //    changes?: { [uri: DocumentUri]: TextEdit[]; };
-    std::vector<std::unordered_map<std::string, TextEdit>> changes;
+    std::unordered_map<std::string, std::vector<TextEdit>> changes;
 
     /**
      * Depending on the client capability
