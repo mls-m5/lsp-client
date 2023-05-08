@@ -4,8 +4,17 @@
 #include "nlohmann/json.hpp"
 #include "requestqueue.h"
 #include "subscriptions.h"
+#include <stdexcept>
 
 namespace lsp {
+
+struct LspError : public std::runtime_error {
+    nlohmann::json content;
+
+    LspError(std::string what, nlohmann::json content)
+        : std::runtime_error{what}
+        , content{std::move(content)} {}
+};
 
 /// Client that makes sense of the raw data from the stream to and from the
 /// lsp-server
@@ -23,20 +32,23 @@ public:
 
     void request(std::string_view method,
                  const nlohmann::json &value,
-                 CallbackT callback) {
+                 CallbackT callback,
+                 std::function<void(const nlohmann::json)> error = 0) {
         auto id = ++_messageId;
-        _handling.waitFor(id, callback);
+        _handling.waitFor(id, callback, error);
         send(method, value, id);
     }
 
     template <typename ReqT, typename FT>
-    void request(const ReqT &value, FT callback) {
+    void request(const ReqT &value,
+                 FT callback,
+                 std::function<void(const nlohmann::json)> error = 0) {
         CallbackT f = [callback](const nlohmann::json &json) {
             callback(json["result"]);
         };
 
         auto id = ++_messageId;
-        _handling.waitFor(id, f);
+        _handling.waitFor(id, f, error);
         send(value, id);
     }
 
@@ -102,6 +114,10 @@ private:
         }
     }
     void handle(const nlohmann::json &json) {
+        if (auto f = json.find("error"); f != json.end()) {
+            _handling.error(json);
+            return;
+        }
         if (!_handling(json) && !_subscriptions(json)) {
             _callback(json);
         }

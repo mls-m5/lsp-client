@@ -10,16 +10,33 @@ namespace lsp {
 struct RequestQueue {
     using CallbackT = std::function<void(const nlohmann::json &)>;
 
-    void waitFor(long id, CallbackT callback) {
+    struct QueueItem {
+        long id;
+        CallbackT cb;
+        CallbackT error;
+    };
+
+    void waitFor(long id, CallbackT callback, CallbackT error) {
         auto g = std::lock_guard{_queueMutex};
-        _waitingQueue.push_back({id, callback});
+        _waitingQueue.push_back({id, callback, error});
     }
 
     bool operator()(const nlohmann::json &json) {
         if (auto it = json.find("id"); it != json.end()) {
             auto callback = find(it->get<long>());
-            if (callback) {
-                callback(json);
+            if (callback.cb) {
+                callback.cb(json);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool error(const nlohmann::json &json) {
+        if (auto it = json.find("id"); it != json.end()) {
+            auto callback = find(it->get<long>());
+            if (callback.error) {
+                callback.error(json);
                 return true;
             }
         }
@@ -27,11 +44,11 @@ struct RequestQueue {
     }
 
 private:
-    CallbackT find(long id) {
+    QueueItem find(long id) {
         auto g = std::lock_guard{_queueMutex};
         for (auto it = _waitingQueue.begin(); it != _waitingQueue.end(); ++it) {
-            if (it->first == id) {
-                auto callback = it->second;
+            if (it->id == id) {
+                auto callback = *it;
                 _waitingQueue.erase(it);
                 return callback;
             }
@@ -41,7 +58,7 @@ private:
     }
 
     std::mutex _queueMutex;
-    std::vector<std::pair<long, CallbackT>> _waitingQueue;
+    std::vector<QueueItem> _waitingQueue;
 };
 
 } // namespace lsp
