@@ -19,6 +19,15 @@ struct DidOpenTextDocumentParams {
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DidOpenTextDocumentParams, textDocument)
 
+struct DidCloseTextDocumentParams {
+    static constexpr std::string_view method = "textDocument/didClose";
+    /**
+     * The document that was closed.
+     */
+    TextDocumentIdentifier textDocument;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DidCloseTextDocumentParams, textDocument)
+
 struct TextDocumentContentChangeEvent {
     std::optional<Range> range;
     std::optional<Integer> rangeLength;
