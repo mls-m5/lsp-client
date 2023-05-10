@@ -30,7 +30,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DidCloseTextDocumentParams, textDocument)
 
 struct TextDocumentContentChangeEvent {
     std::optional<Range> range;
-    std::optional<Integer> rangeLength;
+    std::optional<Integer> rangeLength; // Deprecated from 3.0 dont use
     std::string text;
 };
 
