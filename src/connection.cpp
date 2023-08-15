@@ -47,9 +47,6 @@ Connection::~Connection() {
     std::ofstream{_inPath}
         << std::endl; // Force the in thread to check if abort is called
     _thread.join();
-    _in.close();
-    _out.close();
-    _error.close();
     _clangdThread.join();
     _errorThread.join();
 
@@ -74,13 +71,12 @@ void Connection::send(const nlohmann::json &json) {
     _out << "\r\n";
     _out << str;
     _out << std::endl;
+}
 
-    //    {
-    //        std::cout << "sending:\n";
-    //        std::cout << "Content-Length: " << str.length() << "\r\n";
-    //        std::cout << "\r\n";
-    //        std::cout << str << std::endl;
-    //    }
+void Connection::closePipes() {
+    _in.close();
+    _out.close();
+    _error.close();
 }
 
 void Connection::readIn() {

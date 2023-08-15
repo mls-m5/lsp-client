@@ -12,9 +12,15 @@ struct Connection {
     using CallbackT = std::function<void(const nlohmann::json &)>;
 
     Connection(std::string args, CallbackT callback);
+
+    /// Note that you need to
     ~Connection();
 
     void send(const nlohmann::json &json);
+
+    /// When it is not possible to request the child program to exit, just close
+    /// the pipes
+    void closePipes();
 
 private:
     void readIn();

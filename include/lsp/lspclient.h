@@ -4,6 +4,7 @@
 #include "nlohmann/json.hpp"
 #include "requestqueue.h"
 #include "subscriptions.h"
+#include <future>
 #include <stdexcept>
 
 namespace lsp {
@@ -58,6 +59,12 @@ public:
         send(T::method, value, -1);
     }
 
+    /// Same as above but specify method
+    template <typename T>
+    void notify(std::string_view method, const T &value) {
+        send(method, value, -1);
+    }
+
     template <typename NotificationT>
     using SubscriptionCallbackT = std::function<void(NotificationT)>;
 
@@ -69,6 +76,25 @@ public:
     template <typename T>
     void unsubscribe() {
         _subscriptions.unsubcribe<T>();
+    }
+
+    /// Ask the server to cleanup and prepare for a exit notification
+    std::future<void> shutdown() {
+        auto exitPromise = std::make_shared<std::promise<void>>();
+
+        auto callbackF = [this, exitPromise](nlohmann::json j) {
+            exit(); //
+            exitPromise->set_value();
+        };
+
+        request("shutdown", nlohmann::json{}, callbackF, callbackF);
+
+        return exitPromise->get_future();
+    }
+
+    /// Shut down the client without cleaning up
+    void exit() {
+        notify("exit", nlohmann::json{});
     }
 
 private:
