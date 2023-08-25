@@ -10,6 +10,7 @@ add_library(
     STATIC
     src/connection.cpp
     src/clangversion.cpp
+    src/lspclient.cpp
     )
 
 

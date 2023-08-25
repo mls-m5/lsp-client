@@ -6,11 +6,13 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <string_view>
 
 using namespace std::literals;
 
 namespace {
 void createFifo(std::filesystem::path path) {
+
     auto command = "mkfifo "s + path.string();
     std::system(command.c_str());
 }
@@ -55,28 +57,18 @@ Connection::~Connection() {
     std::filesystem::remove(_errorPath);
 }
 
-void Connection::send(const nlohmann::json &json) {
-    const auto str = [&] {
-        auto ss = std::stringstream{};
-        ss << std::setw(2) << json;
-        return ss.str();
-    }();
-
-    if (!_isServerRunning) {
-        std::cerr << "clangd is not running, probably an error\n";
-        throw std::runtime_error{"clangd is not running"};
-    }
-
-    _out << "Content-Length: " << str.length() << "\r\n";
-    _out << "\r\n";
-    _out << str;
-    _out << std::endl;
+void Connection::send(std::string_view str) {
+    _out << str << std::endl;
 }
 
 void Connection::closePipes() {
     _in.close();
     _out.close();
     _error.close();
+}
+
+Connection::operator bool() const {
+    return _isServerRunning;
 }
 
 void Connection::readIn() {
@@ -125,7 +117,6 @@ void Connection::startClangd() {
     auto clangd = getClangVersion();
     ss << clangd << " " << _args << " > " << _inPath << " < " << _outPath
        << " 2> " << _errorPath;
-    //    std::cout << "starting clangd with: " << ss.str() << std::endl;
     _isServerRunning = true;
     std::system(ss.str().c_str());
     _isServerRunning = false;

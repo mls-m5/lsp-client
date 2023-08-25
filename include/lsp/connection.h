@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <fstream>
 #include <functional>
+#include <string_view>
 #include <thread>
 
 namespace lsp {
@@ -16,11 +17,14 @@ struct Connection {
     /// Note that you need to
     ~Connection();
 
-    void send(const nlohmann::json &json);
+    //    void send(const nlohmann::json &json);
+    void send(std::string_view);
 
     /// When it is not possible to request the child program to exit, just close
     /// the pipes
     void closePipes();
+
+    operator bool() const;
 
 private:
     void readIn();

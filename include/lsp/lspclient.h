@@ -5,7 +5,9 @@
 #include "requestqueue.h"
 #include "subscriptions.h"
 #include <future>
+#include <istream>
 #include <stdexcept>
+#include <string_view>
 
 namespace lsp {
 
@@ -93,16 +95,14 @@ public:
     }
 
     /// Shut down the client without cleaning up
-    void exit() {
-        notify("exit", nlohmann::json{});
-    }
+    void exit();
 
 private:
     // Specify negative id to send without id
     template <typename T>
     long send(const T &value, long id = -1) {
         if (id >= 0) {
-            _connection.send({
+            send({
                 {"jsonrpc", "2.0"},
                 {"id", id},
                 {"method", T::method},
@@ -110,7 +110,7 @@ private:
             });
         }
         else {
-            _connection.send({
+            send({
                 {"jsonrpc", "2.0"},
                 {"method", T::method},
                 {"params", value},
@@ -124,7 +124,7 @@ private:
               const nlohmann::json &json,
               long id = -1) {
         if (id >= 0) {
-            _connection.send({
+            send({
                 {"jsonrpc", "2.0"},
                 {"id", id},
                 {"method", method},
@@ -132,13 +132,16 @@ private:
             });
         }
         else {
-            _connection.send({
+            send({
                 {"jsonrpc", "2.0"},
                 {"method", method},
                 {"params", json},
             });
         }
     }
+
+    void inputThread(std::istream &in);
+
     void handle(const nlohmann::json &json) {
         if (auto f = json.find("error"); f != json.end()) {
             _handling.error(json);
@@ -148,6 +151,8 @@ private:
             _callback(json);
         }
     }
+
+    void send(const nlohmann::json &json);
 
     RequestQueue _handling;
     Subscriptions _subscriptions;
