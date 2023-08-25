@@ -1,9 +1,7 @@
 #include "lsp/connection.h"
-#include "lsp/clangversion.h"
 #include "lsp/randomutil.h"
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <sstream>
 #include <string_view>
 
@@ -18,19 +16,19 @@ void createFifo(std::filesystem::path path) {
 
 namespace lsp {
 
-Connection::Connection(std::string args, HandleFunctionT handle)
-    : _args{args} {
-
+Connection::Connection(std::string command, HandleFunctionT handle) {
     auto tmp = std::filesystem::temp_directory_path();
     _inPath = tmp / ("lsp-in-pipe-" + std::to_string(randomNumber(100000)));
     createFifo(_inPath);
+
     _outPath = tmp / ("lsp-out-pipe-" + std::to_string(randomNumber(100000)));
     createFifo(_outPath);
+
     _errorPath =
         tmp / ("lsp-error-pipe-" + std::to_string(randomNumber(100000)));
     createFifo(_errorPath);
 
-    _clangdThread = std::thread{[this] { startClangd(); }};
+    _clangdThread = std::thread{[this, command] { startProcess(command); }};
     _errorThread = std::thread{
         [this] { std::system(("cat " + _errorPath.string()).c_str()); }};
 
@@ -72,13 +70,13 @@ void Connection::readIn(HandleFunctionT f) {
     f(_in);
 }
 
-void Connection::startClangd() {
+void Connection::startProcess(std::string_view command) {
     auto ss = std::ostringstream{};
     auto clangd = getClangVersion();
-    ss << clangd << " " << _args << " > " << _inPath << " < " << _outPath
-       << " 2> " << _errorPath;
+    ss << command << " > " << _inPath << " < " << _outPath << " 2> "
+       << _errorPath;
     _isServerRunning = true;
-    std::system(ss.str().c_str());
+    std::system(ss.str().c_str()); // This is where the magic happends
     _isServerRunning = false;
 }
 

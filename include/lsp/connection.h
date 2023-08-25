@@ -1,15 +1,14 @@
 #pragma once
 
-// #include "nlohmann/json_fwd.hpp"
 #include <filesystem>
 #include <fstream>
 #include <functional>
-#include <istream>
 #include <string_view>
 #include <thread>
 
 namespace lsp {
 
+/// Handles communication with a open program through named pipes
 struct Connection {
     using HandleFunctionT = std::function<void(std::istream &)>;
 
@@ -19,7 +18,7 @@ struct Connection {
     Connection &operator=(Connection &&) = delete;
 
     /// A new thread is created that gets a reference to the input stream
-    Connection(std::string args, HandleFunctionT callback);
+    Connection(std::string command, HandleFunctionT callback);
 
     /// Note that you need to
     ~Connection();
@@ -34,7 +33,7 @@ struct Connection {
 
 private:
     void readIn(HandleFunctionT);
-    void startClangd();
+    void startProcess(std::string_view);
 
     std::filesystem::path _inPath;
     std::filesystem::path _outPath;
@@ -47,8 +46,6 @@ private:
     std::thread _thread;
     std::thread _clangdThread;
     std::thread _errorThread;
-
-    std::string _args;
 
     bool _isServerRunning = false;
 };
