@@ -23,6 +23,11 @@ struct LspError : public std::runtime_error {
 /// lsp-server
 class LspClient {
 public:
+    LspClient(const LspClient &) = delete;
+    LspClient(LspClient &&) = delete;
+    LspClient &operator=(const LspClient &) = delete;
+    LspClient &operator=(LspClient &&) = delete;
+
     LspClient(std::string args);
     ~LspClient();
 

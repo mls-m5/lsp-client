@@ -8,9 +8,7 @@ add_subdirectory(tests)
 add_library(
     lsp-client
     STATIC
-    src/connection.cpp
-    src/clangversion.cpp
-    src/lspclient.cpp
+    lsp.cpp
     )
 
 
