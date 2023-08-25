@@ -1,23 +1,29 @@
 #pragma once
 
-#include "nlohmann/json_fwd.hpp"
+// #include "nlohmann/json_fwd.hpp"
 #include <filesystem>
 #include <fstream>
 #include <functional>
+#include <istream>
 #include <string_view>
 #include <thread>
 
 namespace lsp {
 
 struct Connection {
-    using CallbackT = std::function<void(const nlohmann::json &)>;
+    using HandleFunctionT = std::function<void(std::istream &)>;
 
-    Connection(std::string args, CallbackT callback);
+    Connection(const Connection &) = delete;
+    Connection(Connection &&) = delete;
+    Connection &operator=(const Connection &) = delete;
+    Connection &operator=(Connection &&) = delete;
+
+    /// A new thread is created that gets a reference to the input stream
+    Connection(std::string args, HandleFunctionT callback);
 
     /// Note that you need to
     ~Connection();
 
-    //    void send(const nlohmann::json &json);
     void send(std::string_view);
 
     /// When it is not possible to request the child program to exit, just close
@@ -27,10 +33,8 @@ struct Connection {
     operator bool() const;
 
 private:
-    void readIn();
+    void readIn(HandleFunctionT);
     void startClangd();
-
-    CallbackT _callback;
 
     std::filesystem::path _inPath;
     std::filesystem::path _outPath;
@@ -47,7 +51,6 @@ private:
     std::string _args;
 
     bool _isServerRunning = false;
-    bool _abort = false;
 };
 
 } // namespace lsp

@@ -1,7 +1,6 @@
 #include "lsp/connection.h"
 #include "lsp/clangversion.h"
 #include "lsp/randomutil.h"
-#include "nlohmann/json.hpp"
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -12,7 +11,6 @@ using namespace std::literals;
 
 namespace {
 void createFifo(std::filesystem::path path) {
-
     auto command = "mkfifo "s + path.string();
     std::system(command.c_str());
 }
@@ -20,9 +18,8 @@ void createFifo(std::filesystem::path path) {
 
 namespace lsp {
 
-Connection::Connection(std::string args, CallbackT callback)
-    : _args{args}
-    , _callback{callback} {
+Connection::Connection(std::string args, HandleFunctionT handle)
+    : _args{args} {
 
     auto tmp = std::filesystem::temp_directory_path();
     _inPath = tmp / ("lsp-in-pipe-" + std::to_string(randomNumber(100000)));
@@ -37,15 +34,13 @@ Connection::Connection(std::string args, CallbackT callback)
     _errorThread = std::thread{
         [this] { std::system(("cat " + _errorPath.string()).c_str()); }};
 
-    _thread = std::thread{[this] { readIn(); }};
+    _thread = std::thread{[handle, this] { readIn(handle); }};
 
     _out.open(_outPath);
     _error.open(_errorPath);
 }
 
 Connection::~Connection() {
-    _abort = true;
-
     std::ofstream{_inPath}
         << std::endl; // Force the in thread to check if abort is called
     _thread.join();
@@ -71,45 +66,10 @@ Connection::operator bool() const {
     return _isServerRunning;
 }
 
-void Connection::readIn() {
+void Connection::readIn(HandleFunctionT f) {
     _in.open(_inPath);
 
-    size_t contentLength = 0;
-
-    auto contentLengthStr = "Content-Length: "sv;
-    auto contentTypeStr = "Content-Type: "sv;
-
-    for (std::string line; std::getline(_in, line);) {
-        if (_abort) {
-            break;
-        }
-        if (line.empty()) {
-            continue;
-        }
-
-        if (line.back() == '\r') {
-            line.pop_back();
-        }
-
-        if (line.empty() || contentLength) {
-            auto json = nlohmann::json{};
-            _in >> json;
-
-            _callback(json);
-
-            contentLength = 0;
-
-            continue;
-        }
-
-        if (line.rfind(contentLengthStr, 0) == 0) {
-            contentLength = std::stol(line.substr(contentLengthStr.size()));
-        }
-
-        if (_abort) {
-            break;
-        }
-    }
+    f(_in);
 }
 
 void Connection::startClangd() {

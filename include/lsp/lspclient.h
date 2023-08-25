@@ -23,8 +23,8 @@ struct LspError : public std::runtime_error {
 /// lsp-server
 class LspClient {
 public:
-    LspClient(std::string args)
-        : _connection{args, [this](const auto &json) { handle(json); }} {}
+    LspClient(std::string args);
+    ~LspClient();
 
     using CallbackT = std::function<void(const nlohmann::json &)>;
 
@@ -159,6 +159,7 @@ private:
     Connection _connection;
     static inline long _messageId = 0;
     CallbackT _callback;
+    bool _abort = false;
 };
 
 } // namespace lsp
