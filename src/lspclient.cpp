@@ -2,9 +2,8 @@
 #include "lsp/clangversion.h"
 #include <sstream>
 
-lsp::LspClient::LspClient(std::string args)
-    : _connection{getClangVersion().string() + " " + args,
-                  [this](auto &in) { inputThread(in); }} {}
+lsp::LspClient::LspClient(std::string command)
+    : _connection{command, [this](auto &in) { inputThread(in); }} {}
 
 lsp::LspClient::~LspClient() {
     _abort = true;

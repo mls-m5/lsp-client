@@ -72,7 +72,7 @@ void test1(LspClient &client) {
 
 int main(int argc, char *argv[]) {
 
-    std::string argstr;
+    std::string argstr = "clangd ";
     {
         // Use this to pass for example "--compile-commands-dir="
         auto args = std::vector<std::string>{argv + 1, argv + argc};
@@ -100,6 +100,9 @@ int main(int argc, char *argv[]) {
     });
 
     test1(client);
+
+    client.shutdown().get();
+    client.exit();
 
     return 0;
 }

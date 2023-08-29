@@ -28,7 +28,8 @@ public:
     LspClient &operator=(const LspClient &) = delete;
     LspClient &operator=(LspClient &&) = delete;
 
-    LspClient(std::string args);
+    /// @param command   the command to start with, including the arguments
+    LspClient(std::string command);
     ~LspClient();
 
     using CallbackT = std::function<void(const nlohmann::json &)>;

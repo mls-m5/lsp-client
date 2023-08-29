@@ -41,6 +41,7 @@ Connection::Connection(std::string command, HandleFunctionT handle) {
 Connection::~Connection() {
     std::ofstream{_inPath}
         << std::endl; // Force the in thread to check if abort is called
+
     _thread.join();
     _clangdThread.join();
     _errorThread.join();
