@@ -90,10 +90,10 @@ void lsp::LspClient::send(const nlohmann::json &json) {
 
     auto ss = std::ostringstream{};
 
-    ss << "Content-Length: " << str.length() << "\r\n";
+    ss << "Content-Length: " << str.length() + 1 << "\r\n";
     ss << "\r\n";
     ss << str;
-    ss << std::endl;
+    ss.flush();
 
     _connection.send(ss.str());
 }
