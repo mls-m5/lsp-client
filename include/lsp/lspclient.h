@@ -87,18 +87,7 @@ public:
     }
 
     /// Ask the server to cleanup and prepare for a exit notification
-    std::future<void> shutdown() {
-        auto exitPromise = std::make_shared<std::promise<void>>();
-
-        auto callbackF = [this, exitPromise](nlohmann::json j) {
-            exit(); //
-            exitPromise->set_value();
-        };
-
-        request("shutdown", nlohmann::json{}, callbackF, callbackF);
-
-        return exitPromise->get_future();
-    }
+    std::future<void> shutdown();
 
     /// Shut down the client without cleaning up
     void exit();

@@ -1,5 +1,4 @@
 #include "lsp/lspclient.h"
-#include "lsp/clangversion.h"
 #include <sstream>
 
 lsp::LspClient::LspClient(std::string command)
@@ -9,8 +8,31 @@ lsp::LspClient::~LspClient() {
     _abort = true;
 }
 
+std::future<void> lsp::LspClient::shutdown() {
+
+    auto exitPromise = std::make_shared<std::promise<void>>();
+
+    if (!_connection) {
+        exitPromise->set_value(); // Do not wait for anything if the connection
+                                  // is closed
+        return exitPromise->get_future();
+    }
+
+    auto callbackF = [this, exitPromise](nlohmann::json j) {
+        exit(); //
+        exitPromise->set_value();
+    };
+
+    request("shutdown", nlohmann::json{}, callbackF, callbackF);
+
+    return exitPromise->get_future();
+}
+
 void lsp::LspClient::exit() {
     _abort = true;
+    if (!_connection) {
+        return;
+    }
     notify("exit", nlohmann::json{});
 }
 
