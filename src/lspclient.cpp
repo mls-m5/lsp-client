@@ -95,5 +95,7 @@ void lsp::LspClient::send(const nlohmann::json &json) {
     ss << str;
     ss.flush();
 
-    _connection.send(ss.str());
+    if (_connection.send(ss.str())) {
+        _handling.failAll();
+    }
 }

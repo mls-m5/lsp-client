@@ -43,6 +43,14 @@ struct RequestQueue {
         return false;
     }
 
+    void failAll() {
+        auto g = std::lock_guard{_queueMutex};
+        for (auto &item : _waitingQueue) {
+            item.error({"id", item.id});
+        }
+        _waitingQueue.clear();
+    }
+
 private:
     QueueItem find(long id) {
         auto g = std::lock_guard{_queueMutex};

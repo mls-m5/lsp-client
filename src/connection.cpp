@@ -51,8 +51,13 @@ Connection::~Connection() {
     std::filesystem::remove(_errorPath);
 }
 
-void Connection::send(std::string_view str) {
+bool Connection::send(std::string_view str) {
     _out << str << std::endl;
+    if (_out.fail() || _out.bad()) {
+        return true;
+    }
+
+    return false;
 }
 
 void Connection::closePipes() {
@@ -77,7 +82,11 @@ void Connection::startProcess(std::string_view command) {
     ss << command << " > " << _inPath << " < " << _outPath << " 2> "
        << _errorPath;
     _isServerRunning = true;
-    std::system(ss.str().c_str()); // This is where the magic happends
+    auto ret =
+        std::system(ss.str().c_str()); // This is where the magic happends
+    if (ret) {
+        std::cerr << "failed to start " + std::string{command} + "\n";
+    }
     _isServerRunning = false;
 }
 

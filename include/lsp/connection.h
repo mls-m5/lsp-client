@@ -23,7 +23,8 @@ struct Connection {
     /// Note that you need to
     ~Connection();
 
-    void send(std::string_view);
+    /// @return true if error, false otherwise
+    bool send(std::string_view);
 
     /// When it is not possible to request the child program to exit, just close
     /// the pipes
