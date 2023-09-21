@@ -727,4 +727,69 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(PrepareRenameParams,
                                                 position,
                                                 workDoneToken)
 
+struct ResponseError {
+
+    /**
+     * A number indicating the error type that occurred.
+     */
+    int code = 0;
+
+    /**
+     * A string providing a short description of the error.
+     */
+    std::string message;
+
+    /**
+     * A primitive or structured value that contains additional
+     * information about the error. Can be omitted.
+     */
+    //    data?: string | number | boolean | array | object | null;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ResponseError, code, message)
+
+// Define error codes as constants
+const int ParseError = -32700;
+const int InvalidRequest = -32600;
+const int MethodNotFound = -32601;
+const int InvalidParams = -32602;
+const int InternalError = -32603;
+
+const int ServerNotInitialized = -32002;
+const int UnknownErrorCode = -32001;
+
+const int RequestFailed = -32803;
+const int ServerCancelled = -32802;
+const int ContentModified = -32801;
+const int RequestCancelled = -32800;
+
+std::string getErrorCodeName(int errorCode) {
+    switch (errorCode) {
+    case ParseError:
+        return "Parse Error";
+    case InvalidRequest:
+        return "Invalid Request";
+    case MethodNotFound:
+        return "Method Not Found";
+    case InvalidParams:
+        return "Invalid Params";
+    case InternalError:
+        return "Internal Error";
+    case ServerNotInitialized:
+        return "Server Not Initialized";
+    case UnknownErrorCode:
+        return "Unknown Error Code";
+    case RequestFailed:
+        return "Request Failed";
+    case ServerCancelled:
+        return "Server Cancelled";
+    case ContentModified:
+        return "Content Modified";
+    case RequestCancelled:
+        return "Request Cancelled";
+    default:
+        return "Unrecognized Error Code";
+    }
+}
+
 } // namespace lsp

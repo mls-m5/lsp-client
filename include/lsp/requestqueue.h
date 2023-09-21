@@ -36,7 +36,7 @@ struct RequestQueue {
         if (auto it = json.find("id"); it != json.end()) {
             auto callback = find(it->get<long>());
             if (callback.error) {
-                callback.error(json);
+                callback.error(json["error"]);
                 return true;
             }
         }
