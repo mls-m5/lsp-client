@@ -185,4 +185,47 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(PublishDiagnosticsParams,
                                                 version,
                                                 diagnostics);
 
+enum class MessageType {
+    Error = 1,   // An error message
+    Warning = 2, // A warning message
+    Info = 3,    // An information message
+    Log = 4,     // A log message
+    Debug = 5    // A debug message
+};
+
+std::string getMessageTypeName(MessageType messageType) {
+    switch (messageType) {
+    case MessageType::Error:
+        return "Error";
+    case MessageType::Warning:
+        return "Warning";
+    case MessageType::Info:
+        return "Info";
+    case MessageType::Log:
+        return "Log";
+    case MessageType::Debug:
+        return "Debug";
+    default:
+        return "Unrecognized Message Type";
+    }
+}
+
+struct ShowMessageParams {
+    static constexpr std::string_view method = "window/showMessage";
+
+    /**
+     * The message type. See {@link MessageType}.
+     */
+    MessageType type = MessageType::Log;
+
+    /**
+     * The actual message.
+     */
+    std::string message;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ShowMessageParams,
+                                                type,
+                                                message);
+
 } // namespace lsp

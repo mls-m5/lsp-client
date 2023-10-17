@@ -5,15 +5,31 @@
 #include "lsptypes.h"
 #include "nlohmann/json.hpp"
 #include <variant>
+#include <vector>
 
 namespace lsp {
 
 struct ClientInfo {
-    std::string name = "clangd-client";
+    std::string name = "lsp-client";
     std::string version = "0";
 };
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ClientInfo, name, version)
+
+struct WorkspaceFolder {
+    /**
+     * The associated URI for this workspace folder.
+     */
+    URI uri;
+
+    /**
+     * The name of the workspace folder. Used to refer to this
+     * workspace folder in the user interface.
+     */
+    std::string name;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(WorkspaceFolder, uri, name)
 
 struct InitializeParams {
     static constexpr std::string_view method = "initialize";
@@ -21,9 +37,14 @@ struct InitializeParams {
     int processId = 0;
 
     ClientInfo clientInfo;
+
+    std::vector<WorkspaceFolder> workspaceFolders;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(InitializeParams, processId, clientInfo)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(InitializeParams,
+                                   processId,
+                                   clientInfo,
+                                   workspaceFolders)
 
 struct WorkDoneProgressParams {
     /**
