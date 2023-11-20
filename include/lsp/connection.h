@@ -11,6 +11,7 @@ namespace lsp {
 /// Handles communication with a open program through named pipes
 struct Connection {
     using HandleFunctionT = std::function<void(std::istream &)>;
+    using ExitedFunctionT = std::function<void()>;
 
     Connection(const Connection &) = delete;
     Connection(Connection &&) = delete;
@@ -18,7 +19,9 @@ struct Connection {
     Connection &operator=(Connection &&) = delete;
 
     /// A new thread is created that gets a reference to the input stream
-    Connection(std::string command, HandleFunctionT callback);
+    /// ExitedFunction is called if the process was closed with a error return
+    /// code
+    Connection(std::string command, HandleFunctionT callback, ExitedFunctionT);
 
     /// Note that you need to
     ~Connection();
@@ -49,6 +52,8 @@ private:
     std::thread _errorThread;
 
     bool _isServerRunning = false;
+
+    ExitedFunctionT _exitedCallback;
 };
 
 } // namespace lsp

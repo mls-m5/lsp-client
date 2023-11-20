@@ -16,7 +16,10 @@ void createFifo(std::filesystem::path path) {
 
 namespace lsp {
 
-Connection::Connection(std::string command, HandleFunctionT handle) {
+Connection::Connection(std::string command,
+                       HandleFunctionT handle,
+                       ExitedFunctionT exitF)
+    : _exitedCallback{exitF} {
     auto tmp = std::filesystem::temp_directory_path();
     _inPath = tmp / ("lsp-in-pipe-" + std::to_string(randomNumber(100000)));
     createFifo(_inPath);
@@ -86,6 +89,7 @@ void Connection::startProcess(std::string_view command) {
         std::system(ss.str().c_str()); // This is where the magic happends
     if (ret) {
         std::cerr << "failed to start " + std::string{command} + "\n";
+        _exitedCallback();
     }
     _isServerRunning = false;
 }

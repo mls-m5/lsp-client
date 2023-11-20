@@ -2,7 +2,13 @@
 #include <sstream>
 
 lsp::LspClient::LspClient(std::string command)
-    : _connection{command, [this](auto &in) { inputThread(in); }} {}
+    : _connection{command,
+                  [this](auto &in) { inputThread(in); },
+                  [this]() {
+                      if (_unexpectedExitCallback) {
+                          _unexpectedExitCallback();
+                      }
+                  }} {}
 
 lsp::LspClient::~LspClient() {
     _abort = true;

@@ -92,6 +92,10 @@ public:
     /// Shut down the client without cleaning up
     void exit();
 
+    void unexpectedShutdownCallback(Connection::ExitedFunctionT f) {
+        _unexpectedExitCallback = f;
+    }
+
 private:
     // Specify negative id to send without id
     template <typename T>
@@ -151,6 +155,7 @@ private:
 
     RequestQueue _handling;
     Subscriptions _subscriptions;
+    Connection::ExitedFunctionT _unexpectedExitCallback;
     Connection _connection;
     static inline long _messageId = 0;
     CallbackT _callback;
