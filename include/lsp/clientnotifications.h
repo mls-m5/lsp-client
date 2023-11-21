@@ -1,3 +1,5 @@
+/// Notifications sent from the client to the server
+/// Notifications is messages sent that does not need a response
 #pragma once
 
 #include "lsptypes.h"

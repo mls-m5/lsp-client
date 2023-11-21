@@ -31,6 +31,29 @@ struct WorkspaceFolder {
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(WorkspaceFolder, uri, name)
 
+struct CompletionClientCapabilities {
+    bool dynamicRegistration = false;
+
+    // TODO {2023-11-21}: What parts needs to be implemented
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CompletionClientCapabilities,
+                                   dynamicRegistration);
+
+struct TextDocumentClientCapabilities {
+    CompletionClientCapabilities completion;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TextDocumentClientCapabilities, completion);
+
+struct ClientCapabilities {
+    // TODO {2023-11-21}: Implement workspace stuff
+
+    TextDocumentClientCapabilities textDocument;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ClientCapabilities, textDocument);
+
 struct InitializeParams {
     static constexpr std::string_view method = "initialize";
 
@@ -39,12 +62,12 @@ struct InitializeParams {
     ClientInfo clientInfo;
 
     std::vector<WorkspaceFolder> workspaceFolders;
+
+    ClientCapabilities capabilities;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(InitializeParams,
-                                   processId,
-                                   clientInfo,
-                                   workspaceFolders)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+    InitializeParams, processId, clientInfo, workspaceFolders, capabilities)
 
 struct WorkDoneProgressParams {
     /**
